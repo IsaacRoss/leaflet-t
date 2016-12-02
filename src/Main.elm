@@ -3,7 +3,7 @@ module Main exposing (..)
 import Html exposing (program)
 import Leaflet.Types exposing (LatLng, ZoomPanOptions, defaultZoomPanOptions)
 import Leaflet.Ports
-import Html exposing (div, button, text, Html)
+import Html exposing (div, button, text, Html, h3)
 import Html.Events exposing (onClick)
 
 
@@ -34,6 +34,7 @@ init =
 
 type Msg
     = SetLatLng LatLng
+    | GetCenter LatLng
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -44,15 +45,18 @@ update msg model =
             , Leaflet.Ports.setView ( latLng, 13, model.zoomPanOptions )
             )
 
+        GetCenter latLng ->
+            ( { model | latLng = latLng }, Cmd.none )
+
 
 main : Program Never Model Msg
 main =
     program { view = view, init = init, update = update, subscriptions = subscriptions }
 
 
-subscriptions : a -> Sub msg
+subscriptions : msg -> Sub Msg
 subscriptions =
-    \_ -> Sub.none
+    always <| Leaflet.Ports.getCenter GetCenter
 
 
 view : Model -> Html Msg
@@ -60,4 +64,5 @@ view model =
     div []
         [ button [ onClick <| SetLatLng birminghamLatLng ] [ text "Set Map Location to Birmingham" ]
         , button [ onClick <| SetLatLng boulderLatLng ] [ text "Set Map Location to Boulder" ]
+        , h3 [] [ text <| toString model.latLng ]
         ]
